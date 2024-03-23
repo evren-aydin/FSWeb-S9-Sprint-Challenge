@@ -60,6 +60,7 @@ export default function AppFunctional(props) {
     setIndex(newIndex)
     setSteps(prevSteps => prevSteps + 1)
     setMessage('')
+    
    
   }
 
@@ -67,11 +68,47 @@ export default function AppFunctional(props) {
     setEmail(evt.target.value)
   }
 
-  function onSubmit(evt) {
-    evt.preventDefault()
-    // Burada form gönderimini işleyebilirsiniz, örneğin, email'i POST edebilirsiniz.
-    console.log("Email submitted:", email)
+ function onSubmit(evt) {
+  evt.preventDefault();
+  const { x, y } = getXY();
+  
+  // API'nin istediği payload formatını oluşturun
+  const payload = {
+    x: x + 1, // API 1 ile 3 arasında bir değer bekliyor
+    y: y + 1, // API 1 ile 3 arasında bir değer bekliyor
+    steps: steps, // steps 0'dan büyük olmalı
+    email: email // geçerli bir email adresi olmalı
+  };
+
+  // Payloadı doğrulayın
+  if (
+    payload.x >= 1 && payload.x <= 3 &&
+    payload.y >= 1 && payload.y <= 3 &&
+    payload.steps > 0 &&
+    // Basit bir email doğrulama regex'i
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)
+  ) {
+    // API'ye POST isteği gönderin
+    fetch('http://localhost:9000/api/result', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('İşlenemez Varlık');
+      }
+      return response.json();
+    })
+    .then(data => setMessage('Başarılı!'))
+    .catch((error) => setMessage('Bir hata oluştu.'));
+  } else {
+    setMessage('Lütfen tüm alanları doğru doldurduğunuzdan emin olun.');
   }
+}
+
 
   return (
     <div id="wrapper" className={props.className}>
